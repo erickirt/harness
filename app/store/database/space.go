@@ -620,7 +620,7 @@ func (s *SpaceStore) FindForUpdate(ctx context.Context, id int64) (*types.Space,
 		return s.find(ctx, id, nil)
 	}
 
-	stmt := database.Builder.Select("space_id").
+	stmt := database.Builder.Select(spaceColumns).
 		From("spaces").
 		Where("space_id = ? AND space_deleted IS NULL", id).
 		Suffix("FOR UPDATE")
