@@ -86,7 +86,9 @@ func (s *Service) handlerCheckFinished(
 	}
 
 	if !mergeQueueSetup.IsActive() {
-		err = s.RemoveAll(ctx, repo, q.Branch, enum.MergeQueueRemovalReasonNoQueue)
+		err = s.RemoveAll(ctx, repo, q.Branch, types.PullRequestActivityPayloadMergeQueueRemove{
+			Reason: enum.MergeQueueRemovalReasonNoQueue,
+		})
 		if err != nil {
 			return fmt.Errorf("failed to clear merge queue: %w", err)
 		}
@@ -96,7 +98,11 @@ func (s *Service) handlerCheckFinished(
 
 	// One failure is enough to remove the PR from the merge queue.
 	if status == enum.CheckStatusFailure {
-		err = s.remove(ctx, entry.PullReqID, enum.MergeQueueRemovalReasonCheckFail)
+		err = s.remove(ctx, entry.PullReqID, types.PullRequestActivityPayloadMergeQueueRemove{
+			Reason:          enum.MergeQueueRemovalReasonCheckFail,
+			MergeQueueCheck: event.Payload.Identifier,
+			MergeCommitSHA:  commitSHA.String(),
+		})
 		if errors.Is(err, ErrNotInQueue) {
 			// Perhaps a check was running after the PR has already been taken from the merge queue.
 			return nil

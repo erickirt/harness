@@ -22,6 +22,7 @@ import (
 	"github.com/harness/gitness/app/auth"
 	"github.com/harness/gitness/app/services/mergequeue"
 	"github.com/harness/gitness/errors"
+	"github.com/harness/gitness/types"
 	"github.com/harness/gitness/types/enum"
 )
 
@@ -41,7 +42,9 @@ func (c *Controller) MergeQueueRemove(
 		return fmt.Errorf("failed to get pull request by number: %w", err)
 	}
 
-	err = c.mergeQueueService.Remove(ctx, pr.ID, enum.MergeQueueRemovalReasonManual)
+	err = c.mergeQueueService.Remove(ctx, pr.ID, types.PullRequestActivityPayloadMergeQueueRemove{
+		Reason: enum.MergeQueueRemovalReasonManual,
+	})
 	if errors.Is(err, mergequeue.ErrNotInQueue) {
 		return usererror.BadRequest("Pull request is not in merge queue.")
 	}

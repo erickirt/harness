@@ -23,6 +23,7 @@ import (
 	"github.com/harness/gitness/app/auth"
 	"github.com/harness/gitness/errors"
 	"github.com/harness/gitness/store"
+	"github.com/harness/gitness/types"
 	"github.com/harness/gitness/types/enum"
 )
 
@@ -43,7 +44,9 @@ func (c *Controller) MergeQueueClear(
 		return fmt.Errorf("failed to acquire access to repo: %w", err)
 	}
 
-	err = c.mergeQueueService.RemoveAll(ctx, repo, branch, enum.MergeQueueRemovalReasonManual)
+	err = c.mergeQueueService.RemoveAll(ctx, repo, branch, types.PullRequestActivityPayloadMergeQueueRemove{
+		Reason: enum.MergeQueueRemovalReasonManual,
+	})
 	if err != nil && !errors.Is(err, store.ErrResourceNotFound) {
 		return fmt.Errorf("failed to remove all merge queue entries: %w", err)
 	}

@@ -37,7 +37,7 @@ import (
 func (s *Service) Remove(
 	ctx context.Context,
 	pullReqID int64,
-	reason enum.MergeQueueRemovalReason,
+	payload types.PullRequestActivityPayloadMergeQueueRemove,
 ) error {
 	entry, err := s.mergeQueueEntryStore.Find(ctx, pullReqID)
 	if errors.Is(err, store.ErrResourceNotFound) {
@@ -52,7 +52,7 @@ func (s *Service) Remove(
 		return fmt.Errorf("failed to find merge queue: %w", err)
 	}
 
-	err = s.remove(ctx, pullReqID, reason)
+	err = s.remove(ctx, pullReqID, payload)
 	if err != nil {
 		return fmt.Errorf("failed to remove merge queue entry: %w", err)
 	}
@@ -73,7 +73,7 @@ func (s *Service) RemoveAll(
 	ctx context.Context,
 	repo *types.RepositoryCore,
 	branch string,
-	reason enum.MergeQueueRemovalReason,
+	payload types.PullRequestActivityPayloadMergeQueueRemove,
 ) error {
 	var (
 		pullReqs      []*types.PullReq
@@ -144,11 +144,7 @@ func (s *Service) RemoveAll(
 	session := bootstrap.NewSystemServiceSession()
 
 	for _, pr := range pullReqs {
-		payload := &types.PullRequestActivityPayloadMergeQueueRemove{
-			Reason: reason,
-		}
-
-		_, prErr := s.activityStore.CreateWithPayload(ctx, pr, session.Principal.ID, payload, nil)
+		_, prErr := s.activityStore.CreateWithPayload(ctx, pr, session.Principal.ID, &payload, nil)
 		if prErr != nil {
 			log.Ctx(ctx).Warn().Err(prErr).Int64("pullreq_id", pr.ID).
 				Msg("failed to create merge queue removal activity")
@@ -167,7 +163,7 @@ func (s *Service) RemoveAll(
 func (s *Service) remove(
 	ctx context.Context,
 	pullReqID int64,
-	reason enum.MergeQueueRemovalReason,
+	payload types.PullRequestActivityPayloadMergeQueueRemove,
 ) error {
 	var (
 		err         error
@@ -297,11 +293,7 @@ func (s *Service) remove(
 
 	session := bootstrap.NewSystemServiceSession()
 
-	payload := &types.PullRequestActivityPayloadMergeQueueRemove{
-		Reason: reason,
-	}
-
-	_, err = s.activityStore.CreateWithPayload(ctx, pr, session.Principal.ID, payload, nil)
+	_, err = s.activityStore.CreateWithPayload(ctx, pr, session.Principal.ID, &payload, nil)
 	if err != nil {
 		// Non-critical failure
 		log.Ctx(ctx).Warn().Err(err).Msg("failed to create merge queue pull request activity")

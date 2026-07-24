@@ -59,10 +59,21 @@ var allPullReqActivityPayloads = func(
 	func() PullReqActivityPayload { return &PullRequestActivityPayloadStateChange{} },
 	func() PullReqActivityPayload { return &PullRequestActivityPayloadTitleChange{} },
 	func() PullReqActivityPayload { return &PullRequestActivityPayloadReviewSubmit{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadReviewerAdd{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadUserGroupReviewerAdd{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadReviewerDelete{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadUserGroupReviewerDelete{} },
 	func() PullReqActivityPayload { return &PullRequestActivityPayloadBranchUpdate{} },
 	func() PullReqActivityPayload { return &PullRequestActivityPayloadBranchDelete{} },
 	func() PullReqActivityPayload { return &PullRequestActivityPayloadBranchRestore{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadBranchChangeTarget{} },
 	func() PullReqActivityPayload { return &PullRequestActivityPayloadTargetBranchDeleted{} },
+	func() PullReqActivityPayload { return &PullRequestActivityLabel{} },
+	func() PullReqActivityPayload { return &PullRequestActivityLabels{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadNonUniqueMergeBase{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadAutoMergeDisabled{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadMergeQueueAdd{} },
+	func() PullReqActivityPayload { return &PullRequestActivityPayloadMergeQueueRemove{} },
 })
 
 // newPayloadForActivity returns a new payload instance for the requested activity type.
@@ -273,7 +284,9 @@ func (a *PullRequestActivityPayloadMergeQueueAdd) ActivityType() enum.PullReqAct
 }
 
 type PullRequestActivityPayloadMergeQueueRemove struct {
-	Reason enum.MergeQueueRemovalReason `json:"reason"`
+	Reason          enum.MergeQueueRemovalReason `json:"reason"`
+	MergeQueueCheck string                       `json:"merge_queue_check,omitempty"`
+	MergeCommitSHA  string                       `json:"merge_commit_sha,omitempty"`
 }
 
 func (a *PullRequestActivityPayloadMergeQueueRemove) ActivityType() enum.PullReqActivityType {

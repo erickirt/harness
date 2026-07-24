@@ -21,6 +21,7 @@ import (
 
 	"github.com/harness/gitness/app/store"
 	"github.com/harness/gitness/job"
+	"github.com/harness/gitness/types"
 	"github.com/harness/gitness/types/enum"
 
 	"github.com/rs/zerolog/log"
@@ -67,7 +68,10 @@ func (j *jobOverdueChecks) Handle(ctx context.Context, _ string, _ job.ProgressR
 			Int64("pullreq_id", entry.PullReqID).
 			Logger()
 
-		err = j.service.Remove(ctx, entry.PullReqID, enum.MergeQueueRemovalReasonCheckTimeout)
+		err = j.service.Remove(ctx, entry.PullReqID, types.PullRequestActivityPayloadMergeQueueRemove{
+			Reason:         enum.MergeQueueRemovalReasonCheckTimeout,
+			MergeCommitSHA: entry.MergeCommitSHA.String(),
+		})
 		if err != nil {
 			logEntry.Warn().Err(err).Msg("failed to remove overdue merge queue entry")
 			continue
